@@ -20,4 +20,9 @@ public abstract class Figure {
 
     public abstract void drawFigure(Graphics g);
 
+    public void move(int row, int col) {
+        this.row = row;
+        this.col = col;
+    }
+
 }

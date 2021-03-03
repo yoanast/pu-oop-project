@@ -7,6 +7,7 @@ public abstract class Tile {
     protected int row;
     protected int col;
     protected String id;
+    protected boolean isObstacle;
     public static final int TILE_SIZE = 70;
     public static Color lightGray = new Color(221, 221, 221);
     public static Color nGray = new Color(170, 170, 170);

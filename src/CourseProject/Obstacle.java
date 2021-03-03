@@ -1,12 +1,12 @@
 package CourseProject;
 
 import java.awt.*;
-import java.util.Random;
 
 public class Obstacle extends Tile{
 
     public Obstacle(int row, int col) {
         super(row, col);
+        this.isObstacle = true;
         this.id = "Obstacle";
     }
 

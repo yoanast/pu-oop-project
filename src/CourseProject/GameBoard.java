@@ -5,13 +5,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
 
-public class GameBoard extends JFrame {
+public class GameBoard extends JFrame implements MouseListener {
 
     public static int firstRandomNumber;
     public static int secondRandomNumber;
     public static int rN;
+    public static Random rand = new Random();
     public Object[][] tileCollection;
     public Object[][] figureCollection;
+    public Object selectedFigure;
+    public static int oldRow;
+    public static int oldCol;
     public Player p1 = new Player(1, true);
     public Player p2 = new Player(2, false);
 
@@ -21,12 +25,53 @@ public class GameBoard extends JFrame {
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setResizable(false);
+        this.addMouseListener(this);
         this.tileCollection = new Object[7][9];
         fillTileCollection();
         this.figureCollection = new Object[7][9];
         fillP1FigureCollection();
         fillP2FigureCollection();
     }
+
+    /**
+     *  Метод, който прихваща натискане на бутона на мишката.
+     */
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        int row = this.getDimensionsBasedOnCoordinates(e.getY());
+        int col = this.getDimensionsBasedOnCoordinates(e.getX());
+
+        if(this.isThereFigure(row,col) && this.selectedFigure == null) {
+
+            this.selectedFigure = this.getFigure(row,col);
+            oldRow = row;
+            oldCol = col;
+            JOptionPane.showMessageDialog(null, "Фигурата е избрана успешно!");
+        } else if (this.selectedFigure != null && isThereFigure(row, col) &&
+                   this.tileCollection[row][col] instanceof Obstacle) {
+            JOptionPane.showMessageDialog(null,"Невъзможно преместване върху препятствие!",
+                    "Невалиден ход", JOptionPane.WARNING_MESSAGE);
+        } else if (this.selectedFigure != null && !isThereFigure(row, col) ||
+                   this.selectedFigure != null && isThereFigure(row, col) ) {
+            actionFrame(row, col);
+        } else if (this.selectedFigure != null && oldRow == row && oldCol == col) {
+            JOptionPane.showMessageDialog(null, "Вие избрахте същата фигура, " +
+            "възможно е само да я излекувате");
+            actionFrame(row, col);
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
 
     /**
      *  Метод, чрез който визуализираме полетата по дадени ред и колона.
@@ -92,7 +137,6 @@ public class GameBoard extends JFrame {
         return this.tileCollection[row][col] != null;
     }
 
-
     /**
      *  Метод, чрез който пълним колекцията на дъската с обекти от тип Tile.
      */
@@ -129,14 +173,11 @@ public class GameBoard extends JFrame {
      */
     public static void getRandomPositionForP1Figure() {
 
-        Random rand = new Random();
         firstRandomNumber = rand.nextInt(2);
         secondRandomNumber = rand.nextInt(9);
     }
 
     public static void getRandomPositionForP2Figure() {
-
-        Random rand = new Random();
         firstRandomNumber = rand.nextInt(7);
         secondRandomNumber = rand.nextInt(9);
         while (firstRandomNumber != 5 && firstRandomNumber != 6 ) {
@@ -146,14 +187,12 @@ public class GameBoard extends JFrame {
     }
 
     public static void getRandomNumberOfObstacles() {
-        Random rand = new Random();
         while (rN == 0) {
             rN = rand.nextInt(5);
         }
     }
 
     public static void getRandomPositionForObstacle() {
-        Random rand = new Random();
         firstRandomNumber = rand.nextInt(9);
         secondRandomNumber = rand.nextInt(9);
         while (firstRandomNumber != 2 && firstRandomNumber != 3 && firstRandomNumber != 4) {
@@ -191,7 +230,6 @@ public class GameBoard extends JFrame {
         }
     }
 
-
     /**
      *  Метод, чрез който пълним колекция с обекти от тип Figure.
      */
@@ -222,6 +260,55 @@ public class GameBoard extends JFrame {
         }
     }
 
+    private int getDimensionsBasedOnCoordinates(int coordinates) {
+        return coordinates / Tile.TILE_SIZE;
+    }
+
+    public void actionFrame(int row, int col) {
+        JFrame f=new JFrame("Choose operation");
+        JLabel ah = new JLabel("ACTIONS");
+        ah.setBounds(150,50,120,30);
+        JButton attackBtn = new JButton("Attack");
+        attackBtn.setBounds(20,100,95,30);
+        attackBtn.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+
+            }
+        });
+        JButton moveBtn = new JButton("Move");
+        moveBtn.setBounds(120,100,95,30);
+        moveBtn.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+
+            }
+        });
+
+        JButton healBtn = new JButton("Heal");
+        healBtn.setBounds(220,100,95,30);
+        healBtn.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+
+            }
+        });
+        f.add(attackBtn);f.add(moveBtn);f.add(healBtn);
+        f.getContentPane().add(ah);
+        f.setSize(350,200);
+        f.setLayout(null);
+        f.setVisible(true);
+        f.setResizable(false);
+
+
+    }
+
+    public void moveFigure(int row, int col) {
+        if (this.selectedFigure instanceof Knight) {
+
+        } else if (this.selectedFigure instanceof Dwarf) {
+
+        } else if (this.selectedFigure instanceof Elf) {
+
+        }
+    }
 
 
 }
