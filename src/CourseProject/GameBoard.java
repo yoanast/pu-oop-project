@@ -2,10 +2,15 @@ package CourseProject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
+import java.util.Random;
 
 public class GameBoard extends JFrame {
 
+    public static int firstRandomNumber;
+    public static int secondRandomNumber;
     public Object[][] tileCollection;
+    public Object[][] figureCollection;
 
     public GameBoard() {
 
@@ -15,6 +20,9 @@ public class GameBoard extends JFrame {
         this.setResizable(false);
         this.tileCollection = new Object[7][9];
         fillTileCollection();
+        this.figureCollection = new Object[7][9];
+        fillP1FigureCollection();
+        fillP2FigureCollection();
     }
 
     /**
@@ -24,6 +32,14 @@ public class GameBoard extends JFrame {
         if (this.isThereTile(row, col)) {
             Tile t = (Tile)this.getTile(row, col);
             t.drawTiles(g);
+        }
+    }
+
+    private void renderFigures(Graphics g, int row, int col) {
+
+        if(this.isThereFigure(row,col)) {
+            Figure fig = (Figure)this.getFigure(row,col);
+            fig.drawFigure(g);
         }
     }
 
@@ -37,9 +53,23 @@ public class GameBoard extends JFrame {
             for(int col = 0; col < 9; col++) {
 
                 this.renderTiles(g,row,col);
-
+                this.renderFigures(g, row, col);
             }
         }
+    }
+
+    /**
+     *  Метод, който ни връща обект от колекцията по зададени ред и колона.
+     */
+    public Object getFigure(int row, int col) {
+        return this.figureCollection[row][col];
+    }
+
+    /**
+     *  Метод, който ни връща дали на дадени ред и колона има фигура.
+     */
+    public boolean isThereFigure(int row, int col) {
+        return this.getFigure(row, col) != null;
     }
 
     /**
@@ -79,6 +109,87 @@ public class GameBoard extends JFrame {
             }
         }
     }
+
+    /**
+     *  Метод, чрез който получаваме две случайни числа и ги записваме на променливите.
+     */
+    public static void getRandomPositionForP1Figure() {
+
+        Random rand = new Random();
+        firstRandomNumber = rand.nextInt(2);
+        secondRandomNumber = rand.nextInt(9);
+    }
+
+    public static void getRandomPositionForP2Figure() {
+
+        Random rand = new Random();
+        firstRandomNumber = rand.nextInt(7);
+        secondRandomNumber = rand.nextInt(9);
+        while (firstRandomNumber != 5 && firstRandomNumber != 6 ) {
+            firstRandomNumber = rand.nextInt(7);
+        }
+    }
+
+    /**
+     *  Метод, чрез който пълним колекция с обекти от тип Figure.
+     */
+    public void fillP1FigureCollection() {
+
+        for(int i = 0; i < 2; i++) {
+            getRandomPositionForP1Figure();
+            if(!this.isThereFigure(firstRandomNumber, secondRandomNumber)) {
+                this.figureCollection[firstRandomNumber][secondRandomNumber] =
+                        (new Knight(firstRandomNumber, secondRandomNumber, Color.PINK));
+            } else i--;
+        }
+
+        for(int i = 0; i < 2; i++) {
+            getRandomPositionForP1Figure();
+            if(!this.isThereFigure(firstRandomNumber, secondRandomNumber)) {
+                this.figureCollection[firstRandomNumber][secondRandomNumber] =
+                        (new Elf(firstRandomNumber, secondRandomNumber, Color.PINK));
+            } else i--;
+        }
+
+        for(int i = 0; i < 2; i++) {
+            getRandomPositionForP1Figure();
+            if(!this.isThereFigure(firstRandomNumber, secondRandomNumber)) {
+                this.figureCollection[firstRandomNumber][secondRandomNumber] =
+                        (new Dwarf(firstRandomNumber, secondRandomNumber, Color.PINK));
+            } else i--;
+        }
+    }
+
+    /**
+     *  Метод, чрез който пълним колекция с обекти от тип Figure.
+     */
+    public void fillP2FigureCollection() {
+
+        for(int i = 0; i < 2; i++) {
+            getRandomPositionForP2Figure();
+            if(!this.isThereFigure(firstRandomNumber, secondRandomNumber)) {
+                this.figureCollection[firstRandomNumber][secondRandomNumber] =
+                        (new Knight(firstRandomNumber, secondRandomNumber, Color.CYAN));
+            } else i--;
+        }
+
+        for(int i = 0; i < 2; i++) {
+            getRandomPositionForP2Figure();
+            if(!this.isThereFigure(firstRandomNumber, secondRandomNumber)) {
+                this.figureCollection[firstRandomNumber][secondRandomNumber] =
+                        (new Elf(firstRandomNumber, secondRandomNumber, Color.CYAN));
+            } else i--;
+        }
+
+        for(int i = 0; i < 2; i++) {
+            getRandomPositionForP2Figure();
+            if(!this.isThereFigure(firstRandomNumber, secondRandomNumber)) {
+                this.figureCollection[firstRandomNumber][secondRandomNumber] =
+                        (new Dwarf(firstRandomNumber, secondRandomNumber, Color.CYAN));
+            } else i--;
+        }
+    }
+
 
 
 }
