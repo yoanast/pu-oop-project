@@ -25,4 +25,27 @@ public abstract class Figure {
         this.col = col;
     }
 
+    public int getAttack() {
+        return attack;
+    }
+
+    public int getShield() {
+        return shield;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    public int getPossibleAttackSquares() {
+        return possibleAttackSquares;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
 }

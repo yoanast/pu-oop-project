@@ -47,10 +47,6 @@ public class GameBoard extends JFrame implements MouseListener {
             oldRow = row;
             oldCol = col;
             JOptionPane.showMessageDialog(null, "Фигурата е избрана успешно!");
-        } else if (this.selectedFigure != null && isThereFigure(row, col) &&
-                   this.tileCollection[row][col] instanceof Obstacle) {
-            JOptionPane.showMessageDialog(null,"Невъзможно преместване върху препятствие!",
-                    "Невалиден ход", JOptionPane.WARNING_MESSAGE);
         } else if (this.selectedFigure != null && !isThereFigure(row, col) ||
                    this.selectedFigure != null && isThereFigure(row, col) ) {
             actionFrame(row, col);
@@ -265,9 +261,9 @@ public class GameBoard extends JFrame implements MouseListener {
     }
 
     public void actionFrame(int row, int col) {
-        JFrame f=new JFrame("Choose operation");
-        JLabel ah = new JLabel("ACTIONS");
-        ah.setBounds(150,50,120,30);
+        JFrame f = new JFrame("Choose operation");
+        JLabel tb = new JLabel("ACTIONS");
+        tb.setBounds(150,50,120,30);
         JButton attackBtn = new JButton("Attack");
         attackBtn.setBounds(20,100,95,30);
         attackBtn.addActionListener(new ActionListener(){
@@ -279,7 +275,17 @@ public class GameBoard extends JFrame implements MouseListener {
         moveBtn.setBounds(120,100,95,30);
         moveBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-
+                if (figureCollection[row][col] instanceof Figure ) {
+                    JOptionPane.showMessageDialog(null, "Не може да се преместите върху " +
+                            "противникова фигура, ако желаете това изберете опция 'Атака', а върху своя фигура" +
+                            "може да се използзва само опцията 'Лекуване'");
+                } else if (figureCollection[row][col] instanceof Obstacle ) {
+                    JOptionPane.showMessageDialog(null, "Не може да се преместите върху " +
+                            "препятствие, ако желаете това изберете опция 'Атака'");
+                } else {
+                    moveFigure(row, col);
+                    f.dispose();
+                }
             }
         });
 
@@ -291,7 +297,7 @@ public class GameBoard extends JFrame implements MouseListener {
             }
         });
         f.add(attackBtn);f.add(moveBtn);f.add(healBtn);
-        f.getContentPane().add(ah);
+        f.getContentPane().add(tb);
         f.setSize(350,200);
         f.setLayout(null);
         f.setVisible(true);
@@ -302,13 +308,69 @@ public class GameBoard extends JFrame implements MouseListener {
 
     public void moveFigure(int row, int col) {
         if (this.selectedFigure instanceof Knight) {
-
+            moveKnight(row, col);
         } else if (this.selectedFigure instanceof Dwarf) {
-
+            moveDwarf(row, col);
         } else if (this.selectedFigure instanceof Elf) {
-
+            moveElf(row, col);
         }
     }
 
+    public void moveKnight(int row, int col) {
+        if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+        row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1) {
+            Figure fig = (Figure) this.selectedFigure;
+            fig.move(row, col);
+            updateBoard(row, col);
+        } else {
+            JOptionPane.showMessageDialog(null, "Невъзможен ход, изберете друга позиция!",
+            "Грешка", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public void moveDwarf(int row, int col) {
+        if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+        row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1 ||
+        row == oldRow + 2 && col == oldCol || row == oldRow && col == oldCol + 2 ||
+        row == oldRow - 2 && col == oldCol || row == oldRow && col == oldCol - 2 ||
+        row == oldRow + 1 && col == oldCol + 1 || row == oldRow - 1 && col == oldCol - 1 ||
+        row == oldRow + 1 && col == oldCol - 1 || row == oldRow - 1 && col == oldCol + 1)  {
+            Figure fig = (Figure) this.selectedFigure;
+            fig.move(row, col);
+            updateBoard(row, col);
+        }  else {
+            JOptionPane.showMessageDialog(null, "Невъзможен ход, изберете друга позиция!",
+            "Грешка", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public void moveElf(int row, int col) {
+        if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+        row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1 ||
+        row == oldRow + 2 && col == oldCol || row == oldRow && col == oldCol + 2 ||
+        row == oldRow - 2 && col == oldCol || row == oldRow && col == oldCol - 2 ||
+        row == oldRow + 1 && col == oldCol + 1 || row == oldRow - 1 && col == oldCol - 1 ||
+        row == oldRow + 1 && col == oldCol - 1 || row == oldRow - 1 && col == oldCol + 1 ||
+        row == oldRow + 3 && col == oldCol || row == oldRow && col == oldCol + 3 ||
+        row == oldRow - 3 && col == oldCol || row == oldRow && col == oldCol - 3 ||
+        row == oldRow + 2 && col == oldCol + 1 || row == oldRow - 2 && col == oldCol - 1 ||
+        row == oldRow + 2 && col == oldCol - 1 || row == oldRow - 2 && col == oldCol + 1 ||
+        row == oldRow + 1 && col == oldCol + 2 || row == oldRow - 1 && col == oldCol - 2 ||
+        row == oldRow + 1 && col == oldCol - 2 || row == oldRow - 1 && col == oldCol + 2)  {
+            Figure fig = (Figure) this.selectedFigure;
+            fig.move(row, col);
+            updateBoard(row, col);
+        }  else {
+            JOptionPane.showMessageDialog(null, "Невъзможен ход, изберете друга позиция!",
+            "Грешка", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public void updateBoard(int row, int col) {
+        this.figureCollection[row][col] = this.selectedFigure;
+        this.figureCollection[oldRow][oldCol] = null;
+        this.selectedFigure = null;
+        this.repaint();
+    }
 
 }
