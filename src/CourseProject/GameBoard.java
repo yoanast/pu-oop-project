@@ -9,8 +9,11 @@ public class GameBoard extends JFrame {
 
     public static int firstRandomNumber;
     public static int secondRandomNumber;
+    public static int rN;
     public Object[][] tileCollection;
     public Object[][] figureCollection;
+    public Player p1 = new Player(1, true);
+    public Player p2 = new Player(2, false);
 
     public GameBoard() {
 
@@ -35,6 +38,9 @@ public class GameBoard extends JFrame {
         }
     }
 
+    /**
+     *  Метод, чрез който визуализираме фигурите по дадени ред и колона.
+     */
     private void renderFigures(Graphics g, int row, int col) {
 
         if(this.isThereFigure(row,col)) {
@@ -86,6 +92,7 @@ public class GameBoard extends JFrame {
         return this.tileCollection[row][col] != null;
     }
 
+
     /**
      *  Метод, чрез който пълним колекцията на дъската с обекти от тип Tile.
      */
@@ -108,6 +115,13 @@ public class GameBoard extends JFrame {
                 this.tileCollection[i][j] = (new PlayerBTerritory(i,j));
             }
         }
+
+        getRandomNumberOfObstacles();
+        for(int i = 0; i <= rN; i++) {
+            getRandomPositionForObstacle();
+            this.tileCollection[firstRandomNumber][secondRandomNumber] =
+                    new Obstacle(firstRandomNumber,secondRandomNumber);
+        }
     }
 
     /**
@@ -127,6 +141,23 @@ public class GameBoard extends JFrame {
         secondRandomNumber = rand.nextInt(9);
         while (firstRandomNumber != 5 && firstRandomNumber != 6 ) {
             firstRandomNumber = rand.nextInt(7);
+            secondRandomNumber = rand.nextInt(9);
+        }
+    }
+
+    public static void getRandomNumberOfObstacles() {
+        Random rand = new Random();
+        while (rN == 0) {
+            rN = rand.nextInt(5);
+        }
+    }
+
+    public static void getRandomPositionForObstacle() {
+        Random rand = new Random();
+        firstRandomNumber = rand.nextInt(9);
+        secondRandomNumber = rand.nextInt(9);
+        while (firstRandomNumber != 2 && firstRandomNumber != 3 && firstRandomNumber != 4) {
+            firstRandomNumber = rand.nextInt(9);
         }
     }
 
@@ -159,6 +190,7 @@ public class GameBoard extends JFrame {
             } else i--;
         }
     }
+
 
     /**
      *  Метод, чрез който пълним колекция с обекти от тип Figure.
