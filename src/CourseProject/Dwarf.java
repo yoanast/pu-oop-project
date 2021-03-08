@@ -12,6 +12,7 @@ public class Dwarf extends Figure{
         this.health = 12;
         this.possibleAttackSquares = 2;
         this.speed = 2;
+        this.maxHealth = 12;
     }
 
     @Override

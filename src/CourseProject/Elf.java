@@ -12,6 +12,7 @@ public class Elf extends Figure{
         this.health = 12;
         this.possibleAttackSquares = 3;
         this.speed = 3;
+        this.maxHealth = 12;
     }
 
     @Override

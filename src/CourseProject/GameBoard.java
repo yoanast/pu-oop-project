@@ -16,8 +16,8 @@ public class GameBoard extends JFrame implements MouseListener {
     public Object selectedFigure;
     public static int oldRow;
     public static int oldCol;
-    public Player p1 = new Player(1, true);
-    public Player p2 = new Player(2, false);
+    public static Player p1 = new Player(1, true);
+    public static Player p2 = new Player(2, false);
 
     public GameBoard() {
 
@@ -31,6 +31,7 @@ public class GameBoard extends JFrame implements MouseListener {
         this.figureCollection = new Object[7][9];
         fillP1FigureCollection();
         fillP2FigureCollection();
+        JOptionPane.showMessageDialog(null, "Играта започва! Ред е на Играч 1 с розовите фигури :)");
     }
 
     /**
@@ -42,11 +43,34 @@ public class GameBoard extends JFrame implements MouseListener {
         int col = this.getDimensionsBasedOnCoordinates(e.getX());
 
         if(this.isThereFigure(row,col) && this.selectedFigure == null) {
-
-            this.selectedFigure = this.getFigure(row,col);
-            oldRow = row;
-            oldCol = col;
-            JOptionPane.showMessageDialog(null, "Фигурата е избрана успешно!");
+            Figure fig = (Figure) figureCollection[row][col];
+            if(p1.isActive) {
+                if (fig.getColor() == Color.PINK) {
+                    this.selectedFigure = this.getFigure(row, col);
+                    oldRow = row;
+                    oldCol = col;
+                    JOptionPane.showMessageDialog(null, "Фигурата е избрана успешно за Играч 1!");
+                    p1.isActive = false;
+                    p2.isActive = true;
+                } else {
+                    JOptionPane.showMessageDialog(null, "Ред е на Играч 1 и той може да " +
+                            "избира само розовите фигури!");
+                    selectedFigure = null;
+                }
+            } else if (p2.isActive) {
+                if(fig.getColor() == Color.CYAN) {
+                    this.selectedFigure = this.getFigure(row, col);
+                    oldRow = row;
+                    oldCol = col;
+                    JOptionPane.showMessageDialog(null, "Фигурата е избрана успешно за Играч 2!");
+                    p1.isActive = true;
+                    p2.isActive = false;
+                } else {
+                    JOptionPane.showMessageDialog(null, "Ред е на Играч 2 и той може да " +
+                            "избира само сините фигури!");
+                    selectedFigure = null;
+                }
+            }
         } else if (this.selectedFigure != null && !isThereFigure(row, col) ||
                    this.selectedFigure != null && isThereFigure(row, col) ) {
             actionFrame(row, col);
@@ -371,6 +395,18 @@ public class GameBoard extends JFrame implements MouseListener {
         this.figureCollection[oldRow][oldCol] = null;
         this.selectedFigure = null;
         this.repaint();
+    }
+
+    public void attackFigure() {
+        Figure fig = (Figure)this.selectedFigure;
+
+    }
+
+    public void knightAttackRules(int row, int col) {
+        if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+            row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1) {
+
+        }
     }
 
 }

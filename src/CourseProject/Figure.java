@@ -12,6 +12,7 @@ public abstract class Figure {
     protected int health;
     protected int possibleAttackSquares;
     protected int speed;
+    public int maxHealth;
 
     public Figure(int row, int col) {
         this.row = row;
@@ -47,5 +48,9 @@ public abstract class Figure {
 
     public int getSpeed() {
         return speed;
+    }
+
+    public Color getColor() {
+        return color;
     }
 }
