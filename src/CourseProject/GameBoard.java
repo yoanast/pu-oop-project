@@ -14,10 +14,11 @@ public class GameBoard extends JFrame implements MouseListener {
     public Object[][] tileCollection;
     public Object[][] figureCollection;
     public Object selectedFigure;
+    public Object figureUnderAttack;
     public static int oldRow;
     public static int oldCol;
-    public static Player p1 = new Player(1, true);
-    public static Player p2 = new Player(2, false);
+    public static Player p1 = new Player(1, true, 0);
+    public static Player p2 = new Player(2, false, 0);
 
     public GameBoard() {
 
@@ -32,6 +33,7 @@ public class GameBoard extends JFrame implements MouseListener {
         fillP1FigureCollection();
         fillP2FigureCollection();
         JOptionPane.showMessageDialog(null, "Играта започва! Ред е на Играч 1 с розовите фигури :)");
+
     }
 
     /**
@@ -42,9 +44,9 @@ public class GameBoard extends JFrame implements MouseListener {
         int row = this.getDimensionsBasedOnCoordinates(e.getY());
         int col = this.getDimensionsBasedOnCoordinates(e.getX());
 
-        if(this.isThereFigure(row,col) && this.selectedFigure == null) {
+        if (this.isThereFigure(row, col) && this.selectedFigure == null) {
             Figure fig = (Figure) figureCollection[row][col];
-            if(p1.isActive) {
+            if (p1.isActive) {
                 if (fig.getColor() == Color.PINK) {
                     this.selectedFigure = this.getFigure(row, col);
                     oldRow = row;
@@ -58,7 +60,7 @@ public class GameBoard extends JFrame implements MouseListener {
                     selectedFigure = null;
                 }
             } else if (p2.isActive) {
-                if(fig.getColor() == Color.CYAN) {
+                if (fig.getColor() == Color.CYAN) {
                     this.selectedFigure = this.getFigure(row, col);
                     oldRow = row;
                     oldCol = col;
@@ -71,9 +73,13 @@ public class GameBoard extends JFrame implements MouseListener {
                     selectedFigure = null;
                 }
             }
-        } else if (this.selectedFigure != null && !isThereFigure(row, col) ||
-                   this.selectedFigure != null && isThereFigure(row, col) ) {
+        } else if (this.selectedFigure != null && !isThereFigure(row, col)) {
             actionFrame(row, col);
+
+        } else if (this.selectedFigure != null && isThereFigure(row, col)) {
+            this.figureUnderAttack = this.getFigure(row,col);
+            actionFrame(row,col);
+
         } else if (this.selectedFigure != null && oldRow == row && oldCol == col) {
             JOptionPane.showMessageDialog(null, "Вие избрахте същата фигура, " +
             "възможно е само да я излекувате");
@@ -114,6 +120,15 @@ public class GameBoard extends JFrame implements MouseListener {
         }
     }
 
+    public void visualizePoints(Graphics g) {
+        String tempP1 = "Точки на Играч 1: " + p1.getPointsReceived();
+        String tempP2 = "Точки на Играч 2: " + p2.getPointsReceived();
+        g.drawString(tempP1,50,505);
+        g.drawString(tempP2,50,525);
+        this.setTitle("                       " + tempP1 + "               " + tempP2);
+
+    }
+
     /**
      *  Метод, чрез който изчертаваме игралната дъска и нейните елементи.
      */
@@ -125,6 +140,7 @@ public class GameBoard extends JFrame implements MouseListener {
 
                 this.renderTiles(g,row,col);
                 this.renderFigures(g, row, col);
+                visualizePoints(g);
             }
         }
     }
@@ -284,6 +300,9 @@ public class GameBoard extends JFrame implements MouseListener {
         return coordinates / Tile.TILE_SIZE;
     }
 
+    /**
+     *  Метод, чрез който създаваме меню с бутони, чрез които ирачът избира хода на събитията.
+     */
     public void actionFrame(int row, int col) {
         JFrame f = new JFrame("Choose operation");
         JLabel tb = new JLabel("ACTIONS");
@@ -292,7 +311,22 @@ public class GameBoard extends JFrame implements MouseListener {
         attackBtn.setBounds(20,100,95,30);
         attackBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-
+                if(figureCollection[row][col] instanceof Figure) {
+                    if (isAttackValid(row, col)) {
+                        attackFigure();
+                        repaint();
+                        f.dispose();
+                    } else JOptionPane.showMessageDialog(null, "Невъзможна атака, изберете друга цел!");
+                    f.dispose();
+                } else if (tileCollection[row][col] instanceof Obstacle) {
+                    attackObstacle(row, col);
+                    JOptionPane.showMessageDialog(null, "Вие унищожихте препятствието!");
+                    f.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Изберете цел, която да атакувате!" +
+                    " Ако просто искате да се преместите, изберете опцията 'Move' от менюто.");
+                    f.dispose();
+                }
             }
         });
         JButton moveBtn = new JButton("Move");
@@ -303,9 +337,11 @@ public class GameBoard extends JFrame implements MouseListener {
                     JOptionPane.showMessageDialog(null, "Не може да се преместите върху " +
                             "противникова фигура, ако желаете това изберете опция 'Атака', а върху своя фигура" +
                             "може да се използзва само опцията 'Лекуване'");
-                } else if (figureCollection[row][col] instanceof Obstacle ) {
+                    f.dispose();
+                } else if (tileCollection[row][col] instanceof Obstacle ) {
                     JOptionPane.showMessageDialog(null, "Не може да се преместите върху " +
                             "препятствие, ако желаете това изберете опция 'Атака'");
+                    f.dispose();
                 } else {
                     moveFigure(row, col);
                     f.dispose();
@@ -330,6 +366,9 @@ public class GameBoard extends JFrame implements MouseListener {
 
     }
 
+    /**
+     *  Методи, чрез които определяме движението на фигурите по дъската.
+     */
     public void moveFigure(int row, int col) {
         if (this.selectedFigure instanceof Knight) {
             moveKnight(row, col);
@@ -398,15 +437,77 @@ public class GameBoard extends JFrame implements MouseListener {
     }
 
     public void attackFigure() {
-        Figure fig = (Figure)this.selectedFigure;
+        Figure sFig = (Figure)this.selectedFigure;
+        Figure aFig = (Figure)this.figureUnderAttack;
+        int attackedFigureCurrentHealth = aFig.getHealth();
+        int dmgCaused = sFig.getAttack() - aFig.getShield();
+        int isAttUnsuccessfulResult = isAttackUnsuccessful();
+
+        if(isAttUnsuccessfulResult != attackedFigureCurrentHealth) {
+            if(isAttUnsuccessfulResult == 3) {
+                dmgCaused = dmgCaused / 2;
+            }
+            aFig.setHealth(attackedFigureCurrentHealth - dmgCaused);
+            JOptionPane.showMessageDialog(null, "Успешна атака!");
+            if(sFig.getColor() == Color.PINK) {
+                p1.pointsReceived = p1.pointsReceived + dmgCaused;
+            } else if (sFig.getColor() == Color.CYAN) {
+                p2.pointsReceived += p1.pointsReceived + dmgCaused;
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Атаката беше неуспешна!");
+        }
 
     }
 
-    public void knightAttackRules(int row, int col) {
-        if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+    public boolean isAttackValid(int row, int col) {
+        if(this.selectedFigure instanceof Knight) {
+            if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
             row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1) {
+                return true;
+            }
+        } else if (this.selectedFigure instanceof Dwarf) {
+            if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+            row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1 ||
+            row == oldRow + 2 && col == oldCol || row == oldRow && col == oldCol + 2 ||
+            row == oldRow - 2 && col == oldCol || row == oldRow && col == oldCol - 2) {
+                return true;
+            }
+        } else if (this.selectedFigure instanceof Elf) {
+            if (row == oldRow + 1 && col == oldCol || row == oldRow && col == oldCol + 1 ||
+            row == oldRow - 1 && col == oldCol || row == oldRow && col == oldCol - 1 ||
+            row == oldRow + 2 && col == oldCol || row == oldRow && col == oldCol + 2 ||
+            row == oldRow - 2 && col == oldCol || row == oldRow && col == oldCol - 2 ||
+            row == oldRow + 3 && col == oldCol || row == oldRow && col == oldCol + 3 ||
+            row == oldRow - 3 && col == oldCol || row == oldRow && col == oldCol - 3) {
+                return true;
+            }
+        } return false;
 
+    }
+
+    public void attackObstacle(int row, int col) {
+        if(isAttackValid(row,col)) {
+            Figure fig = (Figure) this.selectedFigure;
+            fig.move(row, col);
+            updateBoard(row, col);
+            this.tileCollection[row][col] = new Battlefield(row,col);
+            Battlefield bf = (Battlefield) tileCollection[row][col];
+            bf.setColor(Color.lightGray);
         }
     }
+
+    public int isAttackUnsuccessful() {
+
+        int diceResult = 0;
+
+        for (int i = 0; i < 3; i++) {
+            diceResult += rand.nextInt(7 - 1) + 1;
+        }
+        return diceResult;
+    }
+
+
+
 
 }

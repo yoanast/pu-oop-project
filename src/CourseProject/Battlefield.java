@@ -1,12 +1,10 @@
 package CourseProject;
 
 import java.awt.*;
-import java.util.Random;
 
 public class Battlefield extends Tile {
 
-    public static int rN;
-
+    public Color color;
 
     /**
      * Конструктор за полетата.
@@ -14,8 +12,8 @@ public class Battlefield extends Tile {
     public Battlefield(int row, int col) {
         super(row, col);
         this.id = "BF";
+        color = lightGray;
     }
-
 
     @Override
     public void drawTiles(Graphics g) {
@@ -30,4 +28,11 @@ public class Battlefield extends Tile {
         }
     }
 
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
 }

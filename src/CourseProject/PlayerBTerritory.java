@@ -29,6 +29,7 @@ public class PlayerBTerritory extends Tile {
             g.fillRect(tileX, tileY, TILE_SIZE, TILE_SIZE);
             drawBorders(g, tileX, tileY);
         }
+
     }
 
     public void drawFirstTiles(Graphics g, int tileX, int tileY) {
