@@ -9,10 +9,10 @@ public class Elf extends Figure{
         this.color = color;
         this.attack = 5;
         this.shield = 1;
-        this.health = 12;
+        this.health = 10;
         this.possibleAttackSquares = 3;
         this.speed = 3;
-        this.maxHealth = 12;
+        this.maxHealth = 10;
     }
 
     @Override

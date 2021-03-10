@@ -15,10 +15,11 @@ public class GameBoard extends JFrame implements MouseListener {
     public Object[][] figureCollection;
     public Object selectedFigure;
     public Object figureUnderAttack;
+    public int roundCounter;
     public static int oldRow;
     public static int oldCol;
-    public static Player p1 = new Player(1, true, 0);
-    public static Player p2 = new Player(2, false, 0);
+    public static Player p1 = new Player(1, true, 0, 0);
+    public static Player p2 = new Player(2, false, 0, 0);
 
     public GameBoard() {
 
@@ -54,6 +55,7 @@ public class GameBoard extends JFrame implements MouseListener {
                     JOptionPane.showMessageDialog(null, "Фигурата е избрана успешно за Играч 1!");
                     p1.isActive = false;
                     p2.isActive = true;
+                    roundCounter += 1;
                 } else {
                     JOptionPane.showMessageDialog(null, "Ред е на Играч 1 и той може да " +
                             "избира само розовите фигури!");
@@ -120,12 +122,10 @@ public class GameBoard extends JFrame implements MouseListener {
         }
     }
 
-    public void visualizePoints(Graphics g) {
+    public void visualizePoints() {
         String tempP1 = "Точки на Играч 1: " + p1.getPointsReceived();
         String tempP2 = "Точки на Играч 2: " + p2.getPointsReceived();
-        g.drawString(tempP1,50,505);
-        g.drawString(tempP2,50,525);
-        this.setTitle("                       " + tempP1 + "               " + tempP2);
+        this.setTitle( tempP1 + "                   Knights, Elves and Dwarves                   " + tempP2);
 
     }
 
@@ -140,7 +140,7 @@ public class GameBoard extends JFrame implements MouseListener {
 
                 this.renderTiles(g,row,col);
                 this.renderFigures(g, row, col);
-                visualizePoints(g);
+                visualizePoints();
             }
         }
     }
@@ -314,12 +314,14 @@ public class GameBoard extends JFrame implements MouseListener {
                 if(figureCollection[row][col] instanceof Figure) {
                     if (isAttackValid(row, col)) {
                         attackFigure();
-                        repaint();
+                        hasFigureDied(row, col);
+                        updateBoardAfterAttackOrHeal();
                         f.dispose();
                     } else JOptionPane.showMessageDialog(null, "Невъзможна атака, изберете друга цел!");
                     f.dispose();
                 } else if (tileCollection[row][col] instanceof Obstacle) {
                     attackObstacle(row, col);
+                    updateBoardAfterAttackOrHeal();
                     JOptionPane.showMessageDialog(null, "Вие унищожихте препятствието!");
                     f.dispose();
                 } else {
@@ -353,7 +355,13 @@ public class GameBoard extends JFrame implements MouseListener {
         healBtn.setBounds(220,100,95,30);
         healBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-
+                if(figureCollection [row][col] instanceof Figure ) {
+                    isHealValid();
+                    f.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Имате право да лекувате само фигури!");
+                    f.dispose();
+                }
             }
         });
         f.add(attackBtn);f.add(moveBtn);f.add(healBtn);
@@ -362,7 +370,6 @@ public class GameBoard extends JFrame implements MouseListener {
         f.setLayout(null);
         f.setVisible(true);
         f.setResizable(false);
-
 
     }
 
@@ -436,6 +443,11 @@ public class GameBoard extends JFrame implements MouseListener {
         this.repaint();
     }
 
+    public void updateBoardAfterAttackOrHeal() {
+        this.selectedFigure = null;
+        this.repaint();
+    }
+
     public void attackFigure() {
         Figure sFig = (Figure)this.selectedFigure;
         Figure aFig = (Figure)this.figureUnderAttack;
@@ -452,12 +464,13 @@ public class GameBoard extends JFrame implements MouseListener {
             if(sFig.getColor() == Color.PINK) {
                 p1.pointsReceived = p1.pointsReceived + dmgCaused;
             } else if (sFig.getColor() == Color.CYAN) {
-                p2.pointsReceived += p1.pointsReceived + dmgCaused;
+                p2.pointsReceived = p2.pointsReceived + dmgCaused;
             }
+
+
         } else {
             JOptionPane.showMessageDialog(null, "Атаката беше неуспешна!");
         }
-
     }
 
     public boolean isAttackValid(int row, int col) {
@@ -505,6 +518,56 @@ public class GameBoard extends JFrame implements MouseListener {
             diceResult += rand.nextInt(7 - 1) + 1;
         }
         return diceResult;
+    }
+
+    public void hasFigureDied(int row, int col) {
+        Figure sFig = (Figure)this.selectedFigure;
+        Figure aFig = (Figure)this.figureUnderAttack;
+
+        if (aFig.getHealth() <= 0) {
+            this.figureCollection[row][col] = this.figureUnderAttack;
+            this.figureCollection[row][col] = null;
+            this.figureUnderAttack = null;
+            JOptionPane.showMessageDialog(null, "Фигурата беше унищожена!");
+
+            if(sFig.getColor() == Color.CYAN) {
+                p1.setFiguresLost(p1.getFiguresLost() + 1);
+            } else if (sFig.getColor() == Color.PINK) {
+                p2.setFiguresLost(p2.getFiguresLost() + 1);
+            }
+        }
+
+    }
+
+    public void healFigure() {
+
+        rN = rand.nextInt(7 - 1) + 1;
+
+        Figure fig = (Figure) this.selectedFigure;
+        int currentHealth = fig.getHealth();
+        if(currentHealth < fig.maxHealth) {
+            fig.setHealth(currentHealth + rN);
+            JOptionPane.showMessageDialog(null, "Успешно излекувахте фиурата си с " + rN + " здраве");
+            updateBoardAfterAttackOrHeal();
+        }
+    }
+
+    public void isHealValid() {
+        Figure sFig = (Figure) this.selectedFigure;
+        Figure aFig = (Figure)this.figureUnderAttack;
+        if (sFig.getColor() == Color.PINK) {
+            if(aFig.getColor() == Color.PINK) {
+                healFigure();
+            } else {
+                JOptionPane.showMessageDialog(null, "Имате право да лекувате само своя фигура(розова)");
+            }
+        } else if (sFig.getColor() == Color.CYAN) {
+            if(aFig.getColor() == Color.CYAN) {
+                healFigure();
+            } else {
+                JOptionPane.showMessageDialog(null, "Имате право да лекувате само своята фигура(синя)");
+            }
+        }
     }
 
 

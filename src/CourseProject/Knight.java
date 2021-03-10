@@ -9,10 +9,10 @@ public class Knight extends Figure{
         this.color = color;
         this.attack = 8;
         this.shield = 3;
-        this.health = 10;
+        this.health = 15;
         this.possibleAttackSquares = 1;
         this.speed = 1;
-        this.maxHealth = 10;
+        this.maxHealth = 15;
     }
 
     @Override
