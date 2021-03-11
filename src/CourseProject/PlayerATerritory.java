@@ -4,9 +4,6 @@ import java.awt.*;
 
 public class PlayerATerritory extends Tile{
 
-    /**
-     * Конструктор за полетата.
-    */
     public PlayerATerritory(int row, int col) {
         super(row, col);
         this.id = "pA";

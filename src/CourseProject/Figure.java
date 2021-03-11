@@ -14,11 +14,17 @@ public abstract class Figure {
     protected int speed;
     public int maxHealth;
 
+    /**
+     *  Конструктор за фигурите.
+     */
     public Figure(int row, int col) {
         this.row = row;
         this.col = col;
     }
 
+    /**
+     *  Метод, чрез който визуализираме отделните фигури на дъската.
+     */
     public abstract void drawFigure(Graphics g);
 
     public void move(int row, int col) {

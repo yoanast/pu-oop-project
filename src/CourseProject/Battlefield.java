@@ -6,9 +6,6 @@ public class Battlefield extends Tile {
 
     public Color color;
 
-    /**
-     * Конструктор за полетата.
-     */
     public Battlefield(int row, int col) {
         super(row, col);
         this.id = "BF";

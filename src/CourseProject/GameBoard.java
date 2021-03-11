@@ -3,6 +3,7 @@ package CourseProject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class GameBoard extends JFrame implements MouseListener {
@@ -20,10 +21,12 @@ public class GameBoard extends JFrame implements MouseListener {
     public static int oldCol;
     public static Player p1 = new Player(1, true, 0, 0);
     public static Player p2 = new Player(2, false, 0, 0);
+    ArrayList<String> p1PinkDeadFigures = new ArrayList<>();
+    ArrayList<String> p2CyanDeadFigures = new ArrayList<>();
 
     public GameBoard() {
 
-        this.setSize(650, 550);
+        this.setSize(638, 500);
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setResizable(false);
@@ -205,7 +208,7 @@ public class GameBoard extends JFrame implements MouseListener {
     }
 
     /**
-     *  Метод, чрез който получаваме две случайни числа и ги записваме на променливите.
+     *  Методи, чрез които получаваме случайни числа и ги записваме на променливите.
      */
     public static void getRandomPositionForP1Figure() {
 
@@ -315,6 +318,7 @@ public class GameBoard extends JFrame implements MouseListener {
                     if (isAttackValid(row, col)) {
                         attackFigure();
                         hasFigureDied(row, col);
+                        isGameOver();
                         updateBoardAfterAttackOrHeal();
                         f.dispose();
                     } else JOptionPane.showMessageDialog(null, "Невъзможна атака, изберете друга цел!");
@@ -355,13 +359,12 @@ public class GameBoard extends JFrame implements MouseListener {
         healBtn.setBounds(220,100,95,30);
         healBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
-                if(figureCollection [row][col] instanceof Figure ) {
+                if (figureCollection [row][col] instanceof Figure ) {
                     isHealValid();
-                    f.dispose();
                 } else {
                     JOptionPane.showMessageDialog(null, "Имате право да лекувате само фигури!");
-                    f.dispose();
                 }
+                f.dispose();
             }
         });
         f.add(attackBtn);f.add(moveBtn);f.add(healBtn);
@@ -436,6 +439,9 @@ public class GameBoard extends JFrame implements MouseListener {
         }
     }
 
+    /**
+     *  Методи, чрез които опресняваме позииците на фигурите и визуализацията на дъската.
+     */
     public void updateBoard(int row, int col) {
         this.figureCollection[row][col] = this.selectedFigure;
         this.figureCollection[oldRow][oldCol] = null;
@@ -448,6 +454,9 @@ public class GameBoard extends JFrame implements MouseListener {
         this.repaint();
     }
 
+    /**
+     *  Методи, чрез които определяме правилата за атака на фигурите и реализираме атака.
+     */
     public void attackFigure() {
         Figure sFig = (Figure)this.selectedFigure;
         Figure aFig = (Figure)this.figureUnderAttack;
@@ -520,9 +529,22 @@ public class GameBoard extends JFrame implements MouseListener {
         return diceResult;
     }
 
+    /**
+     *  Метод, чрез който проверяваме дали съответна фигура е загубила цялото си здраве и
+     *  ако е така я премахваме от игралното поле.
+     */
     public void hasFigureDied(int row, int col) {
         Figure sFig = (Figure)this.selectedFigure;
         Figure aFig = (Figure)this.figureUnderAttack;
+        String figureType = "";
+
+        if (aFig.getPossibleAttackSquares() == 1) {
+            figureType = "Knight";
+        } else if (aFig.getPossibleAttackSquares() == 2) {
+            figureType = "Dwarf";
+        } else if (aFig.getPossibleAttackSquares() == 3) {
+            figureType = "Elf";
+        }
 
         if (aFig.getHealth() <= 0) {
             this.figureCollection[row][col] = this.figureUnderAttack;
@@ -532,13 +554,18 @@ public class GameBoard extends JFrame implements MouseListener {
 
             if(sFig.getColor() == Color.CYAN) {
                 p1.setFiguresLost(p1.getFiguresLost() + 1);
+                p1PinkDeadFigures.add(figureType);
             } else if (sFig.getColor() == Color.PINK) {
                 p2.setFiguresLost(p2.getFiguresLost() + 1);
+                p2CyanDeadFigures.add(figureType);
             }
         }
 
     }
 
+    /**
+     *  Методи, чрез които определяме правилата за лекуване на фигурите и реализираме лекуване.
+     */
     public void healFigure() {
 
         rN = rand.nextInt(7 - 1) + 1;
@@ -549,6 +576,9 @@ public class GameBoard extends JFrame implements MouseListener {
             fig.setHealth(currentHealth + rN);
             JOptionPane.showMessageDialog(null, "Успешно излекувахте фиурата си с " + rN + " здраве");
             updateBoardAfterAttackOrHeal();
+        } else {
+            JOptionPane.showMessageDialog(null, "Не може да излекувате фигурата, защото " +
+                    "здравето й е непокътнато.");
         }
     }
 
@@ -567,6 +597,26 @@ public class GameBoard extends JFrame implements MouseListener {
             } else {
                 JOptionPane.showMessageDialog(null, "Имате право да лекувате само своята фигура(синя)");
             }
+        }
+    }
+
+    /**
+     *  Метод, чрез който проверяваме дали някой от играчите е загубил всичките си фигури,
+     *  в такъв случай играта приключва и другия играч печели.
+     */
+    public void isGameOver() {
+        if(p1.getFiguresLost() == 6) {
+            JOptionPane.showMessageDialog(null, "Честито! Играч 2 със сините фигури спечели играта!\n" +
+                    "Брой точки на Играч 2: " + p2.getPointsReceived() + "\nБрой точки на Играч 1: " + p1.getPointsReceived() +
+                    "\nБрой рундове за които е приключила играта:" + roundCounter + "\nВсички унищожени единици на Играч 2: " +
+                    p2CyanDeadFigures.toString() + "\nВсички унищожени единици на Играч 1: " + p1PinkDeadFigures.toString());
+            System.exit(0);
+        } else if (p2.getFiguresLost() == 6) {
+            JOptionPane.showMessageDialog(null, "Честито! Играч 1 с розовите фигури спечели играта!/n" +
+                    "Брой точки на Играч 1: " + p1.getPointsReceived() + "\nБрой точки на Играч 2: " + p2.getPointsReceived() +
+                    "\nБрой рундове за които е приключила играта:" + roundCounter + "\nВсички унищожени единици на Играч 1: " +
+                    p1PinkDeadFigures.toString() + "\nВсички унищожени единици на Играч 2: " + p2CyanDeadFigures.toString());
+            System.exit(0);
         }
     }
 
